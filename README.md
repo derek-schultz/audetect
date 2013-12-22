@@ -5,6 +5,8 @@ Recognizes facial expressions using computer vision. Given a series of input ima
 
 Methods are based loosely on [Valstar & Pantic 2006](http://ibug.doc.ic.ac.uk/media/uploads/documents/CVPR06-ValstarPantic-FINAL.pdf).
 
+A (boring) [video demonstration](http://www.youtube.com/watch?v=l1m_9wQ-Dnk) of the program (slowly) doing its thing.
+
 Requirements
 ------------
 audetect has only been tested with
