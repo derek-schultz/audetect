@@ -1,6 +1,7 @@
 import cv2
 import math
 import numpy as np
+import sys
 
 from multiprocessing import Process, Queue
 
@@ -18,7 +19,7 @@ class Detector(object):
 
 class ActionUnitDetector(Detector):
     def __init__(self, *args, **kwargs):
-        super(ActionUnitDetector, self).__init__(self, *args, **kwargs)                
+        super(ActionUnitDetector, self).__init__(self, *args, **kwargs)
         self.set_sequence(kwargs.pop('sequence', None))
         self.ffdetector = FacialFeatureDetector(verbose=self.verbose)
         self.boosters = []
@@ -39,7 +40,7 @@ class ActionUnitDetector(Detector):
     def set_sequence(self, sequence, type=".png"):
         """
         Accepts a list of numpy arrays (good for webcam data) or a directory
-        name containing the images in the sequence (good for testing with 
+        name containing the images in the sequence (good for testing with
         Cohn-Kanade)
         """
         self.sequence = []
@@ -67,6 +68,11 @@ class ActionUnitDetector(Detector):
         initial_points = self.ffdetector.locate_features(first)
         final_points = self.ffdetector.locate_features(last)
 
+        if not initial_points or not final_points:
+          sys.stderr.write("Error: could not locate face in supplied sequence")
+          sys.stderr.write("\n")
+          return []
+
         aus = self.determine_aus(initial_points, final_points)
 
         return aus
@@ -89,7 +95,7 @@ class ActionUnitDetector(Detector):
 
             if guess == True:
                 active_aus.append(AU_ZERO_INDEX_MAPPING[i])
-            
+
         return active_aus
 
 
@@ -117,12 +123,15 @@ class FacialFeatureDetector(Detector):
         # Convert to grayscale and extract face data    
         gray, face, scale = utils.preprocess_face_image(image)
 
+        if not face:
+          return []
+
         # ROI ratio configuration
         ROIs = {
             'left_eyebrow':
                 ((face[1] + face[3] * .15, face[1] + face[3] / 3),
                  (face[0] + face[2] / 8,   face[0] + face[2] / 2)),
-            
+
             'right_eyebrow':
                 ((face[1] + face[3] * .15, face[1] + face[3] / 3),
                  (face[0] + face[2] / 2, face[0] + face[2] * 7/8)),
@@ -146,7 +155,7 @@ class FacialFeatureDetector(Detector):
             'right_eye_right_corner':
                 ((face[1] + face[3] / 3, face[1] + face[3] / 2),
                  (face[0] + face[2] * 8/12, face[0] + face[2] * 7/8)),
-            
+
             'right_eye':
                 ((face[1] + face[3] / 3, face[1] + face[3] / 2),
                  (face[0] + face[2] / 2, face[0] + face[2] * 7/8)),
@@ -154,7 +163,7 @@ class FacialFeatureDetector(Detector):
             'nose':
                 ((face[1] + face[3] / 2, face[1] + face[3] * 11/16),
                  (face[0] + face[2] / 4, face[0] + face[2] * 3/4)),
-            
+
             'mouth':
                 ((face[1] + face[3] *11/16, face[1] + face[3]),
                  (face[0] + face[2] / 5, face[0] + face[2] * 4/5)),
@@ -199,7 +208,7 @@ class FacialFeatureDetector(Detector):
 
         best = 0
         best_coords = (0,0)
-    
+
         for y in range(int(roi[0][0]), int(roi[0][1])):
             for x in range(int(roi[1][0]), int(roi[1][1])):
                 offset_sub = math.floor(PATCH_SIZE / 2.0)
