@@ -211,8 +211,8 @@ class FacialFeatureDetector(Detector):
 
         for y in range(int(roi[0][0]), int(roi[0][1])):
             for x in range(int(roi[1][0]), int(roi[1][1])):
-                offset_sub = math.floor(PATCH_SIZE / 2.0)
-                offset_add = math.ceil(PATCH_SIZE / 2.0)
+                offset_sub = int(math.floor(PATCH_SIZE / 2.0))
+                offset_add = int(math.ceil(PATCH_SIZE / 2.0))
                 sample = image[y - offset_sub : y + offset_add,
                                x - offset_sub : x + offset_add]
 
